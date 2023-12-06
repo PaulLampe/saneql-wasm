@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <iostream>
+#include <emscripten.h>
 //---------------------------------------------------------------------------
 // SaneQL
 // (c) 2023 Thomas Neumann
@@ -230,7 +232,7 @@ SaneQLLexer::Token SaneQLLexer::nextImpl(TokenInfo& info)
       info.encoding = TokenInfo::Encoding::Raw;
 
       // Handle EOF
-      if (!c)
+      if (!c || c == 0x00)
          return (current == input.end()) ? Token::Eof : Token::Error;
 
       // Handle Unicode characters
