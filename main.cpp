@@ -110,6 +110,38 @@ int main(int argc, char* argv[]) {
    return 0;
 }
 
+std::string char_to_hex(char c) {
+    std::stringstream ss;
+    ss << std::hex << (int)c;
+    std::string result = ss.str();
+    return result.size() == 1 ? "000" + result : "00" + result;
+}
+
+std::string escape_string_for_json(const std::string& input) {
+    std::string output;
+    output.reserve(input.length()); // reserve memory to improve performance
+
+    for (char c : input) {
+        switch (c) {
+            case '\"': output += "\\\""; break; // Escape double-quote
+            case '\\': output += "\\\\"; break; // Escape backslash
+            case '\b': output += "\\b";  break; // Escape backspace
+            case '\f': output += "\\f";  break; // Escape formfeed
+            case '\n': output += "\\n";  break; // Escape newline
+            case '\r': output += "\\r";  break; // Escape carriage return
+            case '\t': output += "\\t";  break; // Escape tab
+            default:
+                if ('\x00' <= c && c <= '\x1f') {
+                    // Escape other control characters
+                    output += "\\u" + char_to_hex(c);
+                } else {
+                    output += c;
+                }
+        }
+    }
+
+    return output;
+}
 
 EMSCRIPTEN_KEEPALIVE
 std::string saneql_to_sql(std::string q) {
@@ -125,7 +157,7 @@ std::string saneql_to_sql(std::string q) {
       tree = SaneQLParser::parse(container, query);
    } catch (const exception& e) {
       cerr << e.what() << endl;
-      return "";
+      return std::string("{ \"error\": \"" + escape_string_for_json(std::string(e.what())) + "\", \"query\": \"\", \"input\": \"" + q + "\" }");
    }
 
    SemanticAnalysis semana(schema);
@@ -180,10 +212,10 @@ std::string saneql_to_sql(std::string q) {
             }
          }
       }
-      return sql.getResult();
+      return std::string("{ \"error\": \"\", \"query\": \"" + escape_string_for_json(sql.getResult()) + "\", \"input\": \"" + q + "\" }");
    } catch (const exception& e) {
       cerr << e.what() << endl;
-      return "";
+      return std::string("{ \"error\": \"" + escape_string_for_json(std::string(e.what())) + "\", \"query\": \"\", \"input\": \"" + q + "\" }");
    }
 
       return "";

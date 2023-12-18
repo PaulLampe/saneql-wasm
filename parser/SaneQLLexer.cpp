@@ -7,7 +7,6 @@
 #include <string>
 #include <unordered_map>
 #include <iostream>
-#include <emscripten.h>
 //---------------------------------------------------------------------------
 // SaneQL
 // (c) 2023 Thomas Neumann

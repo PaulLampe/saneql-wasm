@@ -13,9 +13,6 @@ CXXFLAGS:=-std=c++23 -I$(PREFIX) -I. -g -Wall -Wextra
 checkdir=@mkdir -p $(dir $@)
 ASTGEN:=$(PREFIX)astgen --astbaseheader parser/ASTBase.hpp --astbaseclass saneql::ASTBase --astheader parser/AST.hpp --namespace saneql::ast
 
-$(emcc_target):
-	cd emsdk && git pull && ./emsdk install latest && ./emsdk activate latest && . ./emsdk_env.sh
-
 $(PREFIX)parser/AST.hpp: parser/astspec $(PREFIX)astgen
 	$(checkdir)
 	$(ASTGEN) astheader parser/astspec $@
@@ -38,7 +35,6 @@ $(PREFIX)parser/saneql_parser.cpp: $(PREFIX)parser/saneql.expanded.ypp
 $(PREFIX)semana/SemanticAnalysis.o: $(PREFIX)parser/AST.hpp
 
 CXX?=g++
-
 compilecpp=$(CXX) -c -o$@ $(strip $(CXXFLAGS) $(CXXFLAGS-$(dir $<)) $(CXXFLAGS-$<) $(IFLAGS) $(LLVM_IFLAGS)) -MMD -MP -MF $(@:.o=.d) $<
 
 $(PREFIX)%.o: %.cpp
@@ -49,9 +45,8 @@ $(PREFIX)%.o: $(PREFIX)%.cpp
 	$(checkdir)
 	$(compilecpp)
 
-$(PREFIX)saneql: $(emcc_target) $(obj)
+$(PREFIX)saneql: $(obj)
 	$(CXX) $(CXXFLAGS) -o$@ $^
 
 $(PREFIX)astgen: $(PREFIX)makeutil/astgen.o
 	$(CXX) $(CXXFLAGS) -o$@ $^
-

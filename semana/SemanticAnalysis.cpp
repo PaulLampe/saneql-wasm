@@ -246,7 +246,9 @@ SemanticAnalysis::BindingInfo::ArgumentInformation SemanticAnalysis::BindingInfo
 void SemanticAnalysis::BindingInfo::join(const BindingInfo& other)
 // Merge after a join
 {
-   columns.insert(columns.end(), other.columns.begin(), other.columns.end());
+   columns.insert(columns.begin(), other.columns.begin(), other.columns.end());
+   //columns.insert(columns.end(), other.columns.begin(), other.columns.end());
+
    for (auto& c : other.columnLookup) {
       if (!columnLookup.count(c.first)) {
          columnLookup.insert(c);
@@ -1244,7 +1246,7 @@ SemanticAnalysis::ExpressionResult SemanticAnalysis::analyzeCall(const BindingIn
       auto gbs = scope.getGroupByScope();
       if (!gbs) reportError("aggregate '" + name + "' can only be used in group by computations");
 
-      if (args[1] && constBoolArgument(name, "distinct", args[1])) {
+      if ((args.size() > 1) && args[1] && constBoolArgument(name, "distinct", args[1])) {
          op = distinctOp;
       }
 
